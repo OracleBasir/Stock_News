@@ -1,0 +1,2861 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Stock News App</title>
+<!-------------------------------------------------->
+<!-- Libraries included -->
+	<!-- bootstrap -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	
+	
+	<!-- toggle -->
+	<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+	<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+	<!-- Angularjs -->
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular.min.js"></script>
+	<!-- HighChart -->
+	<script src="https://code.highcharts.com/stock/highstock.js"></script>
+	<!----Angular animation--->
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-animate.js"></script>
+	<!---- Moment ---->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js"></script>
+	<!--- Facebook --->
+	<script src="https://connect.facebook.net/en_US/all.js"></script>
+	<!-- Md complete angularjs ---> 
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
+    <link rel='stylesheet prefetch' href='https://cdn.gitcdn.xyz/cdn/angular/bower-material/v1.0.0-rc4/angular-material.css'>
+    <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.6/angular-route.min.js'></script>
+    <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.6/angular-aria.min.js'></script>
+    <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.6/angular-messages.min.js'></script>
+    <script src='https://cdn.gitcdn.xyz/cdn/angular/bower-material/v1.0.0-rc4/angular-material.js'></script>
+    <script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/t-114/assets-cache.js'></script>    
+<!-------------------------------------------------->
+<!-- Style -->	
+<style>
+	body{
+		background-image: url("https://wallpaperplay.com/walls/full/5/6/3/45666.jpg");
+		height: 200%;
+    	margin: 0;
+	}
+	.inline{
+		text-align: inline;
+	}
+.sha{
+  transition: all linear 1s;
+  position: relative;
+  top: 0;
+  left: 0;
+}
+
+.ng-hide {
+  left:100%
+}
+
+.sha2{
+  transition: all linear 1s;
+  position: relative;
+  top: 0;
+  left: 0;
+}
+
+.sha2.ng-hide {
+  left:-100%
+}
+
+</style>
+	  
+</head>
+<!-------------------------------------------------->
+  <body>
+
+    <div class="autocompletedemoFloatingLabel" ng-controller="DemoCtrl as ctrl" ng-app="MyApp" layout="column" ng-cloak="">
+      
+		<div class="row" style="margin-top: 5px;">
+		  <div class="col-sm-1">
+			  <!-- empty section -->
+		  </div>
+		  <div class="col-sm-10">
+			<div class="well" style="padding-bottom: 70px;">
+				<p style="text-align: center; font-weight: bold; font-size: 16px;">Stock Market Search</p>
+
+				<div class="col-sm-3" style="padding-bottom: 10px;">
+					<p style=" font-weight: bold; font-size: 13px;">
+					Enter Stock Ticker Symbol:<span style="color: #991b1e;">*</span>
+					</p>
+				</div>
+
+				<div class="col-sm-6" style="padding-bottom: 15px;">
+					 <md-content>
+						<form name="searchForm">
+							<div layout-gt-sm="row">
+							<md-autocomplete
+											id="MD_Text" 
+											ng-trim="false"
+											flex=""
+											md-item-text="item.Symbol"
+											placeholder="e.g. APPL"
+											md-items="item in ctrl.querySearch(ctrl.searchText)" 
+											md-search-text="ctrl.searchText" 
+											md-selected-item="ctrl.selectedItem" 
+											md-no-cache="ctrl.noCache" 
+											md-input-name="autocompleteField" 
+											required=""
+											md-search-text-change="ctrl.Changed(ctrl.searchText)"
+											>
+							  <md-item-template>
+								<span md-highlight-text="ctrl.searchText">{{item.Symbol+" - " + item.Name + " (" + item.Exchange + ")"}}</span>
+							  </md-item-template>
+							  <md-card md-colors="::{background: '{{theme}}-primary-700'}">
+							  </md-card>
+							  <div ng-messages="searchForm.autocompleteField.$error" ng-if="searchForm.autocompleteField.$touched">
+								<div ng-message="required">You <b>must</b> have a favorite movie.</div>
+								<div ng-message="minlength">Your entry is not long enough.</div>
+								<div ng-message="maxlength">Your entry is too long.</div>
+							  </div>
+							</md-autocomplete>
+						  </div>
+						</form>
+					  </md-content>
+					<p ng-hide="ErrMsg">Please enter Stock ticker symbol.</p>
+				</div>
+
+				<div class="col-sm-3">
+					<button type="button" class="btn btn-primary" ng-disabled="DisabledSearch" ng-click="Get_Quote(ctrl.selectedItem)"><span class="glyphicon glyphicon-search"></span> Get Quote</button>
+					<button type="button" class="btn btn-light" ng-click="Clear()"><span class="glyphicon glyphicon-refresh"></span> clear</button>
+				</div>
+			</div>
+		  </div>
+		  <div class="col-sm-1" >
+			  <!-- empty section -->
+		  </div>
+	  </div>
+		<div class="row">
+			<div class="col-sm-1">
+				<!-- empty section -->
+			</div>
+			<div class="col-sm-10">
+				<hr style="margin-top: -5px;">
+			</div>
+			<div class="col-sm-1">
+				<!-- empty section -->
+			</div>
+		</div>
+		<div class="row">
+		<!--- Left emphty --->
+		<div class="col-sm-1">
+			<!-- empty section -->
+		</div>
+		  <div class="col-sm-10">
+			  <div class="well" style="padding-bottom: auto;">
+				  <div class="panel panel-default sha" ng-hide="myCheck" ng-show="part1">
+					  <div class="panel-heading" style="padding-bottom: 40px;">
+						  <p style="float: left; font-weight: bold; font-size: 14px; float: left; display: inline; margin: 5px 4px 0px 0px">Favorite List</p>
+						  	
+						  <button type="button" class="btn btn-default" style="float: right; display: inline;" ng-click="GoRight()" ng-disabled="GoRightSee"><span class="glyphicon glyphicon-chevron-right" ></span> </button>
+						  <button type="button" class="btn btn-default" ng-click="Refresh()" style="float: right; display: inline; margin-right: 5px;"><span class="glyphicon glyphicon-refresh"></span></button>
+						  <div style="float: right; display: inline; margin-right: 5px;">
+						  	<input id="toggle" type="checkbox" data-toggle="toggle">
+						  </div>
+						  <p style="float: right; display: inline; font-size: 13px; font-weight:bold; margin: 6px 5px 0px 0px">Automatic Refresh: </p>
+					  </div>
+					  <div class="panel-body">
+						 <div class="row" >
+							 
+							 <div class="col-sm-1" style="margin-bottom: 10px;">
+							 	<h5>Sort By:</h5>
+							 </div>
+							<div class="col-sm-3" style="margin-bottom: 10px;">
+							  
+							  <div class="dropdown">
+								<button id="SortByID" class="btn btn-default dropdown-toggle" type="button" ng-model="SortBy" data-toggle="dropdown" style="width: 100%; float: left; text-align: left;">
+								<div style="width: 98%; float: left;">
+									Default
+								</div><span><i class="fa fa-sort"></i></span></button>
+								<ul class="dropdown-menu">
+								  <li ng-click="setSortBy('Default')"><a href="">Default</a></li>
+									<li ng-click="setSortBy('Symbol')"><a href="">Symbol</a></li>
+								  <li ng-click="setSortBy('Price')"><a href="">Price</a></li>
+								  <li ng-click="setSortBy('Change')"><a href="">Change</a></li>
+								  <li ng-click="setSortBy('Change Percent')"><a href="">Change Percent</a></li>
+								  <li ng-click="setSortBy('Volume')"><a href="">Volume</a></li>
+								</ul>
+							  </div>
+							
+									
+								
+							</div>
+							
+							 <div class="col-sm-1" style="margin-bottom: 10px;">
+							 	<h5>Order:</h5>
+							 </div>  
+							 
+							 
+							<div class="col-sm-3" style="margin-bottom: 10px;" >
+
+							 <div class="dropdown" >
+								<button ng-disabled="DisabledOrder" id="OrderId" class="btn btn-default dropdown-toggle" type="button" ng-model="Order" data-toggle="dropdown" style="width: 100%; float: left; text-align: left;">
+								<div style="width: 98%; float: left;">
+									Ascending
+								</div><span><i class="fa fa-sort"></i></span></button>
+								<ul class="dropdown-menu">
+								  <li ng-click="setOrder('Ascenging')"><a href="">Ascending</a></li>
+								  <li ng-click="setOrder('Descenging')"><a href="">Descending</a></li>
+								</ul>
+							  </div>
+	
+							</div>
+						  </div>
+						  
+						<table class="table table-striped">
+							<tbody>
+							  <tr>
+								<td style="font-weight: bold;">Symbol</td>
+								<td style="font-weight: bold;">Stock Price</td>
+								<td style="font-weight: bold;">Change(Change Percent)</td>
+								<td style="font-weight: bold;">Volume</td>
+								<td style="font-weight: bold;"></td>
+							  </tr>
+							  <tr ng-repeat="x in User_Favorite_List | orderBy:SortBy:Order">
+								<td ><a ng-click="Get_Quote(x.Stoch_Symbol)">{{x.Stoch_Symbol}}</a></td>
+								<td>{{x.Last_Price}}</td>
+								<td>
+									<div style="color: red;" ng-hide="{{x.Change_Percent_show_Down}}">
+										{{x.Change}} ( {{x.Change_Percent}}% ) 
+										<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Red_Arrow_Down.svg/2000px-Red_Arrow_Down.svg.png" alt="Down" style="width:10px;height:10px;">
+									</div>
+									<div style="color: green;" ng-hide="{{x.Change_Percent_show_Up}}">
+										{{x.Change}} ( {{x.Change_Percent}} % )
+										<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Green_Arrow_Up.svg/2000px-Green_Arrow_Up.svg.png" alt="Up" style="width:10px;height:10px;">
+									</div>
+								 </td>
+								<td>{{x.Volume}}</td>
+								<td>
+									<button type="button" class="btn btn-default" style="float: right; display: inline;" ng-click="Remove(x.Stoch_Symbol)">
+										<span class="glyphicon glyphicon-trash"></span> 
+									</button>
+								</td>
+							  </tr>
+							</tbody>
+						  </table>
+					  
+					  </div>
+				  </div>
+				  
+				  
+				  <div class="panel panel-default sha2" ng-hide="myCheck2" ng-show="part2">
+					<div class="panel-heading " >
+						
+						<button type="button" class="btn btn-default" ng-click="GoLeft()"><span class="glyphicon glyphicon-chevron-left"></span> </button>
+						<p style="text-align:center; font-weight: bold; font-size: 14px; display: inline;">Stock Detail</p>
+					
+					</div>
+					
+					<div class="panel-body">				  
+					  <ul class="nav nav-pills">
+					  
+						<li class="active"><a data-toggle="pill" href="#Current_Stock">
+							<span class="glyphicon glyphicon-time"></span> 
+								Current Stock
+							</a>
+						</li>
+						<li><a data-toggle="pill" href="#Historical_Chart">
+							<span class="glyphicon glyphicon-stats"></span> 
+								Historical Chart
+							</a>
+						</li>
+						<li><a data-toggle="pill" href="#News_Feeds">
+							<span class="glyphicon glyphicon-link"></span>
+								News Feeds
+							</a>
+						</li>
+					  </ul>
+					  
+					  <div class="tab-content">
+						<div id="Current_Stock" class="tab-pane fade in active">
+							<br>
+							<div class="row"> 
+							<div class="col-sm-6">
+								<br>
+								<br>
+								<p style="text-align: left; font-weight: bold; font-size: 14px; ">Stock details</p>
+								
+																
+								<button type="submit" class="btn btn-default" ng-disabled="FB" style="float: right; margin-top: -40px;margin-bottom: 15px;">
+									<img src="http://kongres-magazine.eu/wp-content/uploads/2017/07/facebook-icon-preview-1.png" alt="FaceBook_icon" width="18" height="18" ng-click="FBbtn()">
+								</button>
+								
+								<button type="button" class="btn btn-default" ng-disabled="Favorite_Star" style="float: right; margin-top: -40px; margin-bottom: 15px; margin-right:3px;" ng-click="Save_Favorite()">
+									<span ng-style="star" class="glyphicon glyphicon-star"></span>
+								</button>
+								
+								<!--------------------------------------->
+								<!-- Table ----->
+								<!-- progress bar -->
+									<div class="progress" ng-hide="ProgressBar_Table" style="margin: 200px 0px;">
+									<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
+									</div>
+								</div>
+								<!-- Danger message -->
+									<div class="alert alert-danger" ng-hide="DangerMsg_Table" style="margin: 200px 0px;">
+  									<strong>Error! Failed to get Current Stock Data.</strong>
+								</div>
+								<table class="table table-striped" ng-hide="Table">
+									<tbody>
+									  <tr>
+										<td style="text-align: left; font-weight: bold; font-size: 14px;">Stock Ticker symbol</td>
+										<td>{{Stoch_Tricker_Symbol}}</td>
+										<td></td>
+										<td></td>
+									  </tr>
+									  <tr>
+										<td style="text-align: left; font-weight: bold; font-size: 14px;">Last Price</td>
+										<td>{{Last_Price}}</td>
+										<td></td>
+										<td></td>
+									  </tr>
+									  <tr>
+										<td style="text-align: left; font-weight: bold; font-size: 14px;">Change (Change Percent)</td>
+										<td >
+											<div style="color: red;" ng-hide="Change_Percent_show_Down">
+												{{Change1}} ( {{Change_Percent1}}% ) 
+												<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Red_Arrow_Down.svg/2000px-Red_Arrow_Down.svg.png" alt="Down" style="width:10px;height:10px;">
+											</div>
+											<div style="color: green;" ng-hide="Change_Percent_show_Up">
+												{{Change2}} ( {{Change_Percent2}} % )
+												<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Green_Arrow_Up.svg/2000px-Green_Arrow_Up.svg.png" alt="Up" style="width:10px;height:10px;">
+											</div>
+										</td>
+										<td></td>
+										<td></td>
+									  </tr>
+									  <tr>
+										<td style="text-align: left; font-weight: bold; font-size: 14px;">TimeStamp</td>
+										<td>{{Time_Stamp}}</td>
+										<td></td>
+										<td></td>
+									  </tr>
+									  <tr>
+										<td style="text-align: left; font-weight: bold; font-size: 14px;">Open</td>
+										<td>{{Open}}</td>
+										<td></td>
+										<td></td>
+									  </tr>
+									  <tr>
+										<td style="text-align: left; font-weight: bold; font-size: 14px;" ng-hide="Close1">Previous Close</td>
+										<td style="text-align: left; font-weight: bold; font-size: 14px;" ng-hide="Close2">Close</td>
+										<td>{{Previous_Close}}</td>
+										<td></td>
+										<td></td>
+									  </tr>
+									  <tr>
+										<td style="text-align: left; font-weight: bold; font-size: 14px;">Day's Range</td>
+										<td>{{Day_Range}}</td>
+										<td></td>
+										<td></td>
+									  </tr>
+									  <tr>
+										<td style="text-align: left; font-weight: bold; font-size: 14px;">Volume</td>
+										<td>{{Volume}}</td>
+										<td></td>
+										<td></td>
+									  </tr>	
+									</tbody>
+								</table>
+								<!--------------------------------------->
+							</div> 
+							<div class="col-sm-6">
+								<ul id="ind" class="nav nav-tabs">
+									<li class="active"><a data-toggle="tab" href="#Price">Price</a></li>
+									<li><a data-toggle="tab" href="#SMA">SMA</a></li>
+									<li><a data-toggle="tab" href="#EMA">EMA</a></li>
+									<li><a data-toggle="tab" href="#STOCH">STOCH</a></li>
+									<li><a data-toggle="tab" href="#RSI">RSI</a></li>
+									<li><a data-toggle="tab" href="#ADX">ADX</a></li>
+									<li><a data-toggle="tab" href="#CCI">CCI</a></li>
+									<li><a data-toggle="tab" href="#BBANDS">BBANDS</a></li>
+									<li><a data-toggle="tab" href="#MACD">MACD</a></li>
+								</ul>
+								<div class="tab-content">
+									<div id="Price" class="tab-pane fade in active">
+										<!-- progress bar -->
+										<div class="progress" ng-hide="ProgressBar_Price" style="margin: 200px 0px;">
+											<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
+											</div>
+										</div>
+										<!-- Danger message -->
+										<div class="alert alert-danger" ng-hide="DangerMsg_Price" style="margin: 200px 0px;">
+											<strong>Error! Failed to get Price Current Stock Data.</strong>
+										</div>
+										<!-- table --->
+									  <div id="container_Price" ng-hide="Price_chart" style="width=150px; height=100px;" ></div>
+									</div>
+
+									<div id="SMA" class="tab-pane fade">
+										<!-- progress bar -->
+										<div class="progress" ng-hide="ProgressBar_SMA" style="margin: 200px 0px;"s>
+											<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
+											</div>
+										</div>	
+										<!-- Danger message -->
+										<div class="alert alert-danger" ng-hide="DangerMsg_SMA" style="margin: 200px 0px;">
+											<strong>Error! Failed to get SMA Current Stock Data.</strong>
+										</div>
+										<!-- table -->
+										<div id="container_SMA" ng-hide="SMA_chart"></div>
+									</div>
+
+									<div id="EMA" class="tab-pane fade">
+										
+										<!-- progress bar -->
+										<div class="progress" ng-hide="ProgressBar_EMA" style="margin: 200px 0px;">
+											<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
+											</div>
+										</div>	
+										<!-- Danger message -->
+										<div class="alert alert-danger" ng-hide="DangerMsg_EMA" style="margin: 200px 0px;">
+											<strong>Error! Failed to get EMA Current Stock Data.</strong>
+										</div>
+										<!-- table -->
+										<div id="container_EMA"  ng-hide="EMA_chart"></div>
+									</div>
+
+									<div id="STOCH" class="tab-pane fade">
+										<!-- progress bar -->
+										<div class="progress" ng-hide="ProgressBar_STOCH" style="margin: 200px 0px;">
+											<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
+											</div>
+										</div>	
+										<!-- Danger message -->
+										<div class="alert alert-danger" ng-hide="DangerMsg_STOCH" style="margin: 200px 0px;">
+											<strong>Error! Failed to get STOCH Current Stock Data.</strong>
+										</div>
+										<!-- table -->
+										<div id="container_STOCH" ng-hide="STOCH_chart"></div>
+									</div>
+
+									<div id="RSI" class="tab-pane fade">
+										<!-- progress bar -->
+										<div class="progress" ng-hide="ProgressBar_RSI" style="margin: 200px 0px;">
+											<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
+											</div>
+										</div>	
+										<!-- Danger message -->
+										<div class="alert alert-danger" ng-hide="DangerMsg_RSI" style="margin: 200px 0px;">
+											<strong>Error! Failed to get RSI Current Stock Data.</strong>
+										</div>
+										<!-- table -->
+										<div id="container_RSI" ng-hide="RSI_chart"></div>
+									</div>
+
+									<div id="ADX" class="tab-pane fade">
+										
+										<!-- progress bar -->
+										<div class="progress" ng-hide="ProgressBar_ADX" style="margin: 200px 0px;">
+											<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
+											</div>
+										</div>
+										<!-- Danger message -->
+										<div class="alert alert-danger" ng-hide="DangerMsg_ADX" style="margin: 200px 0px;">
+											<strong>Error! Failed to get ADX Current Stock Data.</strong>
+										</div>
+										<!-- table -->
+										<div id="container_ADX" ng-hide="ADX_chart"></div>
+									</div>	
+
+									<div id="CCI" class="tab-pane fade">
+										<!-- progress bar -->
+										<div class="progress" ng-hide="ProgressBar_CCI" style="margin: 200px 0px;">
+											<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
+											</div>
+										</div>	
+										<!-- Danger message -->
+										<div class="alert alert-danger" ng-hide="DangerMsg_CCI" style="margin: 200px 0px;">
+											<strong>Error! Failed to get CCI Current Stock Data.</strong>
+										</div>
+										<!-- table -->
+										
+										<div id="container_CCI" ng-hide="CCI_chart"></div>
+									</div>
+
+									<div id="BBANDS" class="tab-pane fade">
+										<!-- progress bar -->
+										<div class="progress" ng-hide="ProgressBar_BBANDS" style="margin: 200px 0px;">
+											<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
+											</div>
+										</div>
+										<!-- Danger message -->
+										<div class="alert alert-danger" ng-hide="DangerMsg_BBANDS" style="margin: 200px 0px;">
+											<strong>Error! Failed to get BBANDS Current Stock Data.</strong>
+										</div>
+										<!-- table -->
+										
+										<div id="container_BBANDS" ng-hide="BBANDS_chart"></div>
+									</div>
+
+									<div id="MACD" class="tab-pane fade">
+										<!-- progress bar -->
+										<div class="progress" ng-hide="ProgressBar_MACD" style="margin: 200px 0px;">
+											<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
+											</div>
+										</div>	
+										<!-- Danger message -->
+										<div class="alert alert-danger" ng-hide="DangerMsg_MACD" style="margin: 200px 0px;">
+											<strong>Error! Failed to get MACD Current Stock Data.</strong>
+										</div>
+										<!-- table -->
+										<div id="container_MACD" ng-hide="MACD_chart"></div>
+									</div>
+								</div>
+							</div>
+					 </div>
+						  </div>
+						  
+						<div id="Historical_Chart" class="tab-pane fade">
+							<br>
+							<!-- progress bar -->
+							<div class="progress" ng-hide="ProgressBar_Historical_Chart" style="margin: 200px 0px;">
+									<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
+									</div>
+							</div>	
+							<!-- Danger message -->
+							<div class="alert alert-danger" ng-hide="DangerMsg_Historical_Chart" style="margin: 200px 0px;">
+									<strong>Error! Failed to get Historical Chart Current Stock Data.</strong>
+							</div>
+							<!-- table -->
+							<div id="container_stockChart" ng-hide="Historical_Chart" style="border: 2px; border-style: solid; border-color: #e0e0e0;"></div>
+						  </div>
+						<div id="News_Feeds" class="tab-pane fade">
+							<br>
+							<!-- progress bar -->
+							<div class="progress" ng-hide="ProgressBar_News_Feeds" style="margin: 200px 0px;">
+									<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
+									</div>
+							</div>
+							<!-- Danger message -->
+							<div class="alert alert-danger" ng-hide="DangerMsg_News_Feeds" style="margin: 200px 0px;">
+								<strong>Error! Failed to get News Feeds.</strong>
+							</div>
+							<!-- News -->
+							<div class="well" style="background-color: #e8e8e8;" ng-repeat="news in NewsList" ng-hide="News_Feeds">
+								<a style="color: #436392; font-size: 18px; font-weight: bold;" ng-href={{news.url}} target="_blank">{{news.title}}</a>
+								<br>
+								<br>
+								<p style="font-weight: bold;">Author: {{news.author}}</p>
+								<p style="font-weight: bold;">Date: {{news.date}}</p>
+							</div>
+						  </div>
+					  </div>
+					</div>
+				  </div>
+				  
+				  
+			  </div>
+		  </div>
+		<!--- Right emphty --->
+		<div class="col-sm-1">
+			<!-- empty section -->
+		</div>
+	</div>
+		
+    </div>
+  </body>
+</html>
+
+<script>
+(function() {
+  'use strict';
+  angular
+    .module('MyApp')
+    .controller('DemoCtrl', DemoCtrl);
+
+function DemoCtrl($http,$scope) {
+	
+
+	
+
+	//-------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------
+	//----------------------------- Defult Variables --------------------------------
+	//-------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------
+	
+	// global variable
+	var Stoch_Symbol = $scope.ctrl.selectedItem;;
+	var Last_Price;
+	var Change;
+	var Change_Percent;
+	var Volume;
+	var Change_Percent_show_Down;
+	var Change_Percent_show_Up;
+	var favorites = []; // Json of Favorates
+	var FinalCheck; 
+	
+	//AutoSearch defult values
+	$scope.ErrMsg = true;// make the err invisibale
+	$scope.DisabledSearch = true;
+	
+	// hide arrows and EDT
+	$scope.Change_Percent_show_Down = true;
+	$scope.Change_Percent_show_Up = true;
+
+	// hiding the loading bars 
+	$scope.ProgressBar_Table = true;
+	$scope.ProgressBar_Price = true;
+	$scope.ProgressBar_SMA = true;
+	$scope.ProgressBar_EMA = true;
+	$scope.ProgressBar_STOCH = true;
+	$scope.ProgressBar_RSI = true;
+	$scope.ProgressBar_ADX = true;
+	$scope.ProgressBar_CCI = true;
+	$scope.ProgressBar_BBANDS = true;
+	$scope.ProgressBar_MACD = true;
+	$scope.ProgressBar_Table = true;
+	$scope.ProgressBar_Historical_Chart = true;
+	$scope.ProgressBar_News_Feeds = true;
+
+	// hiding the charts and table
+	$scope.Table = true;
+	$scope.Price_chart = true;
+	$scope.SMA_chart = true;
+	$scope.EMA_chart = true;
+	$scope.STOCH_chart = true;
+	$scope.RSI_chart = true;
+	$scope.ADX_chart = true;
+	$scope.CCI_chart = true;
+	$scope.BBANDS_chart = true;
+	$scope.MACD_chart = true;
+	$scope.Historical_Chart= true;
+	$scope.News_Feeds= true;
+	
+
+	//hidig the Error message
+	$scope.DangerMsg_Table = true;
+	$scope.DangerMsg_Price = true;
+	$scope.DangerMsg_chart = true;
+	$scope.DangerMsg_SMA = true;
+	$scope.DangerMsg_EMA = true;
+	$scope.DangerMsg_STOCH = true;
+	$scope.DangerMsg_RSI = true;
+	$scope.DangerMsg_ADX = true;
+	$scope.DangerMsg_CCI = true;
+	$scope.DangerMsg_BBANDS = true;
+	$scope.DangerMsg_MACD = true;
+	$scope.DangerMsg_Historical_Chart= true;
+	$scope.DangerMsg_News_Feeds = true;
+
+	// defult for storing Hight charts
+	var SelectedChart ={"Price":"" , "SMA": "" , "EMA":"", "STOCH":"", "RSI":"", "ADX":"", "CCI":"", "BBANDS":"", "MACD":"" };
+
+	/// show the first Div
+	$scope.myCheck = false;
+	$scope.myCheck2 = true;
+
+	//Disable the FB and favorate btn
+	$scope.FB = true;
+	$scope.Favorite_Star = true;
+	
+	//make the go right invisibale
+	$scope.GoRightSee = true;
+	//------------------------------
+	//Order favorate table
+	$scope.DisabledOrder = true;
+	
+	//-------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------
+	//----------------------------- Functions ---------------------------------------
+	//-------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------
+	
+		// checking th evalidation for the 
+	$(document).ready(function() {
+		$('.orderinput').on('change click keyup', function(event) { myComplexFunc(event); } );
+
+	
+		function OnChange() {
+			var query = document.getElementById("input-0");
+			if(query.value.trim() != ""){
+				console.log("it works!");
+				$scope.DisabledSearch = true;
+				$scope.ErrMsg = true;
+				$('#input-0').css('border', '');
+				
+			}else{
+				console.log("show erroe");
+				$scope.ErrMsg = false;// make the err invisibale
+				$('#input-0').css('border', '1px solid red');
+			}
+		}	
+
+		//it gonna check each of the 
+		document.getElementById("input-0").addEventListener("change", OnChange);
+
+	});
+	//-------------------------------------------------------------------------------
+		// checking the touched
+	$(document).ready(function(){
+		$("#input-0").focusin(function(){
+			$scope.ErrMsg = true;
+			$(this).css('border', '');
+			console.log("Focusin");
+			
+		});
+		$("#input-0").focusout(function(){
+			var query = document.getElementById("input-0");
+			if(query.value == ""){	
+				console.log("Focusout");
+				$scope.ErrMsg = false;// make the err invisibale
+				$(this).css('border', '1px solid red');				
+			}
+
+		});
+	});	
+	//-------------------------------------------------------------------------------
+		/// Auto search 
+    this.querySearch = function (query) {
+	$scope.ErrMsg = true; 
+	console.log("I got the letter");
+     return $http.get('http://localhost:8089/hw8/AutoComplete/' + escape(query))
+        .then(function(result) {
+		 //when it was selecteed show it
+		 if($scope.ctrl.selectedItem != null)
+		  	{
+			    $scope.DisabledSearch = false;
+		  	} 
+		 return result.data;
+		 
+        });
+    }
+	//-------------------------------------------------------------------------------
+		//Orderby
+	$scope.setOrder = function(value){
+		
+		$("#OrderId").html('<div style="width: 98%; float: left;">' + value + '</div><span><i class="fa fa-sort"></i></span>');
+		
+		if(value == 'Ascenging'){
+			$scope.Order = true;
+		}else{
+			$scope.Order = false;
+		}
+		
+	}
+	//-------------------------------------------------------------------------------
+		//SortBy favorate table
+	$scope.setSortBy = function(value){
+		
+		$("#SortByID").html('<div style="width: 98%; float: left;">' + value + '</div><span><i class="fa fa-sort"></i></span>');
+		
+		//make serOrder visibale
+		$scope.DisabledOrder = false;
+		
+		if(value == 'Symbol'){
+			$scope.SortBy = 'Stoch_Symbol';
+		};
+		if(value == 'Price'){
+			$scope.SortBy = 'Last_Price';
+		};
+		if(value == 'Change'){
+			$scope.SortBy = 'Change';
+		};
+		if(value == 'Change Percent'){
+			$scope.SortBy = 'Change_Percent';
+		};
+		if(value == 'Volume'){
+			$scope.SortBy = 'Volume';
+		};
+		if(value == 'Default'){
+			$scope.DisabledOrder = true;
+		};
+	}
+	//-------------------------------------------------------------------------------	
+		FB.init({appId: '581243758905392', status: true, cookie: true,
+		xfbml: true});
+		//when the btn clicked
+
+		$scope.FBbtn = function(){
+
+			var test = $('#ind').children(".active").text().trim();
+			console.log(test);
+			//var test2 = JSON.stringify(SelectedChart[test].userOptions);
+			var test2 = SelectedChart[test].userOptions;
+			test2 = JSON.stringify(test2);
+			console.log(test2);
+			
+			
+			$.ajax({
+				url:'http://localhost:8089/hw8/Picture/',
+				data:{options: test2},
+				type:'GET',
+				success:function(response,status,xhr){
+					console.log("I got the picture from highchart !");
+					console.log(response);// printing Json Object on the console
+
+					FB.ui(
+					{
+					method: 'feed',
+					dispplay: 'popup',
+					picture: "https://export.highcharts.com/"+ response
+					}
+				, function(response2){
+					console.log(response2);
+					if (response2 && !response2.error_message){
+						alert("Post Successfully");
+					}else{
+						alert("No Post");
+					}
+				});
+				},
+				error: function(xhr,status,error){
+					//
+				}
+				
+			});
+}
+	//-------------------------------------------------------------------------------		
+		// go right btn
+		$scope.GoRight = function(){
+			$(".sha").hide();
+			$(".sha2").show();
+			$scope.myCheck = true;
+			$scope.myCheck2 = false;
+}
+	//-------------------------------------------------------------------------------		
+		// go left btn
+		$scope.GoLeft = function(){
+			$(".sha2").hide();
+			$(".sha").show();
+			$scope.myCheck = false;
+			$scope.myCheck2 = true;
+}
+	//-------------------------------------------------------------------------------		
+		// Clear button
+		$scope.Clear = function(){
+			// hiding the charts and table
+			$scope.Table = true;
+			$scope.Price_chart = true;
+			$scope.SMA_chart = true;
+			$scope.EMA_chart = true;
+			$scope.STOCH_chart = true;
+			$scope.RSI_chart = true;
+			$scope.ADX_chart = true;
+			$scope.CCI_chart = true;
+			$scope.BBANDS_chart = true;
+			$scope.MACD_chart = true;
+			$scope.Historical_Chart= true;
+			$scope.News_Feeds= true;
+			// make the color of star normal
+			$scope.star = {"color" : " "};	
+			//Disable the FB and favorate btn
+			$scope.FB = true;
+			$scope.Favorite_Star = true;
+			// got to left
+			$(".sha2").hide();
+			$(".sha").show();
+			$scope.myCheck = false;
+			$scope.myCheck2 = true;
+			//hiding error messages
+			$scope.DangerMsg_Table = true;
+			$scope.DangerMsg_Price = true;
+			$scope.DangerMsg_chart = true;
+			$scope.DangerMsg_SMA = true;
+			$scope.DangerMsg_EMA = true;
+			$scope.DangerMsg_STOCH = true;
+			$scope.DangerMsg_RSI = true;
+			$scope.DangerMsg_ADX = true;
+			$scope.DangerMsg_CCI = true;
+			$scope.DangerMsg_BBANDS = true;
+			$scope.DangerMsg_MACD = true;
+			$scope.DangerMsg_Historical_Chart= true;
+			$scope.DangerMsg_News_Feeds = true;
+			//clear the text box 
+			$scope.ctrl.searchText = "";
+			//go right 
+			$scope.GoRightSee = true;
+}
+	//-------------------------------------------------------------------------------		
+		// refresh button
+		$scope.Refresh = function(){
+
+		if (typeof(Storage) !== "undefined") {
+				if (localStorage.favorite_List) {
+
+					var testing = localStorage.favorite_List;
+					var JsonObj = [];
+					JsonObj = JSON.parse(testing);
+
+					$scope.User_Favorite_List = JsonObj;
+
+					var JsonObj2 = [];
+					JsonObj2 = JsonObj;
+
+					var JsonObj3 = [];// updated Json
+					for(var i=0; i<JsonObj2.length; i++)
+						{
+						console.log(JsonObj2[i]["Stoch_Symbol"]);
+
+						// get data from Server.js and show it to the table
+						$http({
+							method : "GET",
+							url : 'http://localhost:8089/hw8/Indicators/Price/' + JsonObj2[i]["Stoch_Symbol"],
+						}).then(function mySuccess(response) {
+							console.log("I got the data for Refresh!");
+
+							var Price_JsonObj = response.data;
+
+							//symbol
+							var symbol_temprary = Price_JsonObj["Meta Data"]["2. Symbol"];
+
+							//Last Price
+								Last_Price = Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[0]]["4. close"] *1;
+								Last_Price = Last_Price.toFixed(2);
+
+							// Change Percent
+								var Change_Calculation = Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[0]]["4. close"] - Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[1]]["4. close"];
+
+								Change = Change_Calculation.toFixed(2)
+
+							//change percent
+								Change_Calculation = Change_Calculation/Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[1]]["4. close"];	  
+
+							//make it to the percent
+								Change_Calculation = Change_Calculation*100;
+
+							// rounded up change
+								Change_Percent = Change_Calculation.toFixed(2);
+							
+								//show the change
+								if ( Change >= 0)
+									{
+										Change_Percent_show_Down = true;
+										Change_Percent_show_Up = false;
+
+									}
+									else
+									{
+										Change_Percent_show_Down = false;
+										Change_Percent_show_Up = true;
+									}
+
+								// rounded up change
+								Change_Percent = Change_Calculation.toFixed(2);
+
+							// Volume
+								Volume = Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[0]]["5. volume"];
+								Volume = Volume.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+
+							JsonObj3.push({
+									"Stoch_Symbol" : symbol_temprary,    
+									"Last_Price" : Last_Price,   
+									"Change" : Change,   
+									"Change_Percent" : Change_Percent,   
+									"Volume" : Volume,
+									"Change_Percent_show_Down" : Change_Percent_show_Down,
+									"Change_Percent_show_Up" : Change_Percent_show_Up
+								 });
+
+							if(JsonObj3.length == JsonObj.length ){
+								$scope.User_Favorite_List = JsonObj3
+							}
+						//----------------------------------------------------------//
+						}, function myError(response) {
+							//$scope.myWelcome = "Something went wrong";
+						});
+
+						}
+
+
+
+
+
+
+				}else{
+					// noting show on the table
+				}
+
+				//$scope.User_Favorite_List = JsonObj3;
+		} else {
+			alert("We can not show the information which was saved on the Storage to the table becuase your browser does not support web storage!!");
+		}	
+}
+	//-------------------------------------------------------------------------------	
+		// Auto refresh button
+		$(document).ready(function(){
+			$("#toggle").click(function(){console.log(111)});
+			$("#toggle").change(function() {
+				if ($(this).is(":checked")) {
+				  //if trigger is on 
+					console.log("Auto refresh is on!!");
+					FinalCheck = setInterval(function(){
+						if (typeof(Storage) !== "undefined") {
+							if (localStorage.favorite_List) {
+
+								var testing = localStorage.favorite_List;
+								var JsonObj = [];
+								JsonObj = JSON.parse(testing);
+
+								$scope.User_Favorite_List = JsonObj;
+
+								var JsonObj2 = [];
+								JsonObj2 = JsonObj;
+
+								var JsonObj3 = [];// updated Json
+								for(var i=0; i<JsonObj2.length; i++)
+									{
+									console.log(JsonObj2[i]["Stoch_Symbol"]);
+
+									// get data from Server.js and show it to the table
+									$http({
+										method : "GET",
+										url : 'http://localhost:8089/hw8/Indicators/Price/' + JsonObj2[i]["Stoch_Symbol"],
+									}).then(function mySuccess(response) {
+										console.log("I got the data for Refresh!");
+
+										var Price_JsonObj = response.data;		
+											
+										
+										//symbol
+										var symbol_temprary = Price_JsonObj["Meta Data"]["2. Symbol"];
+
+										//Last Price
+											Last_Price = Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[0]]["4. close"] *1;
+											Last_Price = Last_Price.toFixed(2);
+
+										// Change Percent
+											var Change_Calculation = Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[0]]["4. close"] - Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[1]]["4. close"];
+
+											Change = Change_Calculation.toFixed(2)
+
+											//change percent
+											Change_Calculation = Change_Calculation/Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[1]]["4. close"];	  
+
+
+
+											//make it to the percent
+											Change_Calculation = Change_Calculation*100;
+
+											// rounded up change
+											Change_Percent = Change_Calculation.toFixed(2);
+
+											//show the change
+											if ( Change >= 0)
+												{
+													Change_Percent_show_Down = true;
+													Change_Percent_show_Up = false;
+
+												}
+											else
+												{
+													Change_Percent_show_Down = false;
+													Change_Percent_show_Up = true;
+												}
+
+											// rounded up change
+											Change_Percent = Change_Calculation.toFixed(2);
+
+										// Volume
+											Volume = Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[0]]["5. volume"];
+											Volume = Volume.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+
+										JsonObj3.push({
+												"Stoch_Symbol" : symbol_temprary,    
+												"Last_Price" : Last_Price,   
+												"Change" : Change,   
+												"Change_Percent" : Change_Percent,   
+												"Volume" : Volume,
+												"Change_Percent_show_Down" : Change_Percent_show_Down,
+												"Change_Percent_show_Up" : Change_Percent_show_Up
+											 });
+
+										if(JsonObj3.length == JsonObj.length ){
+											$scope.User_Favorite_List = JsonObj3
+										}
+									//----------------------------------------------------------//
+									}, function myError(response) {
+										//$scope.myWelcome = "Something went wrong";
+									});
+
+									}
+
+
+							}else{
+								// noting show on the table
+							}
+
+							//$scope.User_Favorite_List = JsonObj3;
+					} else {
+						alert("We can not show the information which was saved on the Storage to the table becuase your browser does not support web storage!!");}
+				}, 5000);
+
+
+				}
+				else{
+					clearInterval(FinalCheck);
+					console.log("Auto refresh is Off!! after last time");
+				}
+			});	
+});	
+	//-------------------------------------------------------------------------------
+		// when clicking on each option put it in the text file
+		$scope.filltextbox = function(string){
+			Stoch_Symbol= string.substr(0, string.indexOf('-')-1); 
+			$scope.Stoch_Name = Stoch_Symbol;
+			$scope.hidethis = true;
+			$scope.DisabledSearch = false;
+}
+	//-------------------------------------------------------------------------------	
+		//Saving Favorite
+		$scope.Save_Favorite = function(){
+			Stoch_Symbol = $scope.Stoch_Tricker_Symbol;
+			console.log(Stoch_Symbol,Last_Price,Change,Change_Percent,Volume,Change_Percent_show_Down,Change_Percent_show_Up);
+
+			if($scope.star["color"] == " ")
+				{
+					///Storing in Browser Storage
+					if (typeof(Storage) !== "undefined") {
+						if (localStorage.favorite_List) {
+
+							var JsonObj = [];
+							var testing = localStorage.favorite_List;
+
+							JsonObj = JSON.parse(testing);
+							JsonObj.push({
+											"Stoch_Symbol" : Stoch_Symbol,    
+											"Last_Price" : Last_Price,   
+											"Change" : Change,   
+											"Change_Percent" : Change_Percent,   
+											"Volume" : Volume,
+											"Change_Percent_show_Down" : Change_Percent_show_Down,
+											"Change_Percent_show_Up" : Change_Percent_show_Up
+										 });
+							$scope.User_Favorite_List = JsonObj;// Real time showing to the table
+							localStorage.setItem('favorite_List', JSON.stringify(JsonObj));//storing to the storage
+
+							// make the color yellow
+							$scope.star = {"color" : "yellow"};
+							console.log(localStorage.favorite_List);
+
+						}else{
+							// push for the first time 
+							favorites.push( {
+								"Stoch_Symbol" : Stoch_Symbol,    
+								"Last_Price" : Last_Price,   
+								"Change" : Change,   
+								"Change_Percent" : Change_Percent,   
+								"Volume" : Volume,
+								"Change_Percent_show_Down" : Change_Percent_show_Down,
+								"Change_Percent_show_Up" : Change_Percent_show_Up
+							} );
+							localStorage.setItem('favorite_List', JSON.stringify(favorites));
+							//show on the table
+							$scope.User_Favorite_List = favorites;
+							// make the color yellow
+							$scope.star = {"color" : "yellow"};
+
+						}
+
+	} else {
+							alert("Sorry, your browser does not support web storage!!");
+					}		
+				}else{
+					//favorate table
+					if (typeof(Storage) !== "undefined") {
+
+							if (localStorage.favorite_List) {
+								var testing = localStorage.favorite_List;
+								var JsonObj = [];
+								JsonObj = JSON.parse(testing);
+
+								//console.log(JsonObj[0]["Stoch_Symbol"]);
+								var JsonStoring = [];
+								var j =0;
+								for(var i=0; i<JsonObj.length; i++)
+									{
+										if(JsonObj[i]["Stoch_Symbol"] != Stoch_Symbol)
+											{
+												JsonStoring[j] = JsonObj[i];
+												j++;
+												//console.log(JsonObj.[i]);
+												//delete JsonObj[i];
+												//JsonObj.length--;
+												//$scope.star = {"color" : "yellow"};
+											}
+									}
+								$scope.User_Favorite_List = JsonStoring;
+								localStorage.setItem('favorite_List', JSON.stringify(JsonStoring));//storing to the storage
+
+								// removing Star color from a symbol which is showing
+								$scope.star = {"color" : " "}
+								console.log(JsonStoring);
+
+							}else{
+								// noting show on the table
+							}
+
+					} else {
+						alert("We can not show the information which was saved on the Storage to the table becuase your browser does not support web storage!!");
+					}
+
+				}
+
+
+}
+	//-------------------------------------------------------------------------------	
+		//favorate table
+		if (typeof(Storage) !== "undefined") {
+
+				if (localStorage.favorite_List) {
+
+					var testing = localStorage.favorite_List;
+					var JsonObj = [];
+					JsonObj = JSON.parse(testing);
+
+					$scope.User_Favorite_List = JsonObj;
+
+
+
+				}else{
+					// noting show on the table
+				}
+
+} else {
+			alert("We can not show the information which was saved on the Storage to the table becuase your browser does not support web storage!!");
+		}
+	//-------------------------------------------------------------------------------	
+		//Removing from table
+		$scope.Remove = function(Deleted_Symbol){
+			//favorate table
+			if (typeof(Storage) !== "undefined") {
+
+					if (localStorage.favorite_List) {
+
+						var testing = localStorage.favorite_List;
+						var JsonObj = [];
+						JsonObj = JSON.parse(testing);
+
+						//console.log(JsonObj[0]["Stoch_Symbol"]);
+						var JsonStoring = [];
+						var j =0;
+						for(var i=0; i<JsonObj.length; i++)
+							{
+								if(JsonObj[i]["Stoch_Symbol"] != Deleted_Symbol)
+									{
+										JsonStoring[j] = JsonObj[i];
+										j++;
+										//console.log(JsonObj.[i]);
+										//delete JsonObj[i];
+										//JsonObj.length--;
+										//$scope.star = {"color" : "yellow"};
+									}
+							}
+						$scope.User_Favorite_List = JsonStoring;
+						localStorage.setItem('favorite_List', JSON.stringify(JsonStoring));//storing to the storage
+
+						// removing Star color from a symbol which is showing
+						if(Deleted_Symbol == Stoch_Symbol){
+							$scope.star = {"color" : " "}
+						}
+						console.log(JsonStoring);
+
+					}else{
+						// noting show on the table
+					}
+
+			} else {
+				alert("We can not show the information which was saved on the Storage to the table becuase your browser does not support web storage!!");
+			}	
+
+}
+	//-------------------------------------------------------------------------------
+		//showing indicators/////////
+		$scope.Get_Quote = function(SymbolCome){
+			
+			// puting the symbol to the Symbol_Table
+			var Symbol_Table = SymbolCome["Symbol"];
+			if(SymbolCome["Symbol"] === undefined)
+				{
+					var Symbol_Table = SymbolCome;
+				}
+			
+			console.log(SymbolCome["Symbol"]);
+			//set te back ground img
+			//document.body.style.backgroundImage = "url('http://cs-server.usc.edu:45678/hw/hw8/images/background.png')";
+			//go to left to show the detail
+			$(".sha").hide();
+			$(".sha2").show();
+			$scope.myCheck = true;
+			$scope.myCheck2 = false;
+
+			//make star normal color
+			$scope.star = {"color" : " "};
+			// showing the loading bars 
+			$scope.ProgressBar_Table = false;
+			$scope.ProgressBar_Price = false;
+			$scope.ProgressBar_SMA = false;
+			$scope.ProgressBar_EMA = false;
+			$scope.ProgressBar_STOCH = false;
+			$scope.ProgressBar_RSI = false;
+			$scope.ProgressBar_ADX = false;
+			$scope.ProgressBar_CCI = false;
+			$scope.ProgressBar_BBANDS = false;
+			$scope.ProgressBar_MACD = false;
+			$scope.ProgressBar_Table = false;
+			$scope.ProgressBar_Historical_Chart = false;
+			$scope.ProgressBar_News_Feeds = false;
+
+			// hiding the charts and table
+			$scope.Table = true;
+			$scope.Price_chart = true;
+			$scope.SMA_chart = true;
+			$scope.EMA_chart = true;
+			$scope.STOCH_chart = true;
+			$scope.RSI_chart = true;
+			$scope.ADX_chart = true;
+			$scope.CCI_chart = true;
+			$scope.BBANDS_chart = true;
+			$scope.MACD_chart = true;
+			$scope.Historical_Chart= true;
+			$scope.myCheck = true;
+			$scope.News_Feeds= true;
+			
+			//hidig the Error message
+			$scope.DangerMsg_Table = true;
+			$scope.DangerMsg_Price = true;
+			$scope.DangerMsg_chart = true;
+			$scope.DangerMsg_SMA = true;
+			$scope.DangerMsg_EMA = true;
+			$scope.DangerMsg_STOCH = true;
+			$scope.DangerMsg_RSI = true;
+			$scope.DangerMsg_ADX = true;
+			$scope.DangerMsg_CCI = true;
+			$scope.DangerMsg_BBANDS = true;
+			$scope.DangerMsg_MACD = true;
+			$scope.DangerMsg_Historical_Chart= true;
+			$scope.DangerMsg_News_Feeds = true;
+			// show the right btn
+			$scope.GoRightSee = false;
+
+			///------------------------------////
+			/// Price & Historical Chart ////////totally has been done
+			///------------------------------////
+			//Stoch_Symbol = Symbol_Table;
+			// get data from Server.js and show it to the table
+			var Repeat_Price = 0;
+			function Price(Stoch_Symbol){
+				$http({
+					method : "GET",
+					url : 'http://localhost:8089/hw8/Indicators/Price/' + Stoch_Symbol,
+				}).then(function mySuccess(response) {
+					console.log("I got the data for Price!");
+					console.log(response.data);// printing Json Object on the console
+
+
+					//Validation for error
+					if(Object.keys(response.data).length == 0)
+						{
+							if(Repeat_Price<2){
+								Repeat_Price++;
+								console.log(Repeat_Price);
+								Price(Stoch_Symbol);
+							}else{
+								
+								//error message    
+								$scope.DangerMsg_Table = false;
+								$scope.DangerMsg_Price = false;
+								$scope.DangerMsg_Historical_Chart= false;
+								//hiding the table and charts
+								$scope.Table = true;
+								$scope.Historical_Chart= true;
+								$scope.Price_chart = true;	
+								// progress bar
+								$scope.ProgressBar_Price = true;
+								$scope.ProgressBar_Table = true;
+								$scope.ProgressBar_Historical_Chart = true;	
+							}
+						}
+					else
+						{	
+						if(!response.data.hasOwnProperty("Error Message"))
+						   {   
+
+							//--------------------------
+							//checking if the symbol is a favorate list or not:
+							//--------------------------	
+
+							if (typeof(Storage) !== "undefined") {
+								if (localStorage.favorite_List) {
+
+										var testing = localStorage.favorite_List;
+										var JsonObj = [];
+										JsonObj = JSON.parse(testing);
+
+										for(var i=0; i<JsonObj.length; i++)
+											{
+												if(JsonObj[i]["Stoch_Symbol"] == Stoch_Symbol)
+													{
+														$scope.star = {"color" : "yellow"};
+														console.log("Changed the color of star!!");
+													}
+											}
+
+
+									}else{
+										console.log("we dont have storage yet!!")
+									}
+
+							} else {
+									alert("Sorry, your browser does not support web storage!!");
+							}
+							//enable the FB and favorate btn
+							$scope.FB = false;
+							$scope.Favorite_Star = false;
+
+							////////////////////////////////////////
+							///////////Printing the Chart //////////
+							////////////////////////////////////////
+
+							// removing progress bar and show the object
+							$scope.ProgressBar_Price = true;
+							$scope.ProgressBar_Table = true;
+							$scope.Table = false;
+							$scope.Price_chart = false;	
+							$scope.ProgressBar_Historical_Chart = true;
+							$scope.Historical_Chart= false;
+
+							var Price_JsonObj = response.data;
+
+							//----------------
+							//valifation Error
+							//-----------------
+							if(Price_JsonObj == " "){
+
+								$scope.DangerMsg_Table = false;
+								$scope.DangerMsg_Price = false;
+								$scope.DangerMsg_Historical_Chart= false;
+							}else{
+							//--------------------------
+							//shwoing statics to the tabe:
+							//--------------------------
+
+
+							// symbol
+								$scope.Stoch_Tricker_Symbol = Price_JsonObj["Meta Data"]["2. Symbol"];
+
+							//Last Price
+								Last_Price = Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[0]]["4. close"] *1;
+								Last_Price = Last_Price.toFixed(2);
+								$scope.Last_Price = Last_Price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+							// Change Percent
+								var Change_Calculation = Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[0]]["4. close"] - Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[1]]["4. close"];
+
+								Change = Change_Calculation.toFixed(2)
+
+								//change percent
+								Change_Calculation = Change_Calculation/Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[1]]["4. close"];	  
+
+
+
+								//make it to the percent
+								Change_Calculation = Change_Calculation*100;
+
+								// rounded up change
+								Change_Percent = Change_Calculation.toFixed(2);
+
+								//show the change
+								if ( Change >= 0)
+									{
+										$scope.Change2 = Change;
+										$scope.Change_Percent2 = Change_Percent;
+										$scope.Change_Percent_show_Down = true;
+										$scope.Change_Percent_show_Up = false;
+										Change_Percent_show_Down = true;
+										Change_Percent_show_Up = false;
+
+									}
+								else
+									{
+										$scope.Change1 = Change;
+										$scope.Change_Percent1 = Change_Percent;
+										$scope.Change_Percent_show_Down = false;
+										$scope.Change_Percent_show_Up = true;
+										Change_Percent_show_Down = false;
+										Change_Percent_show_Up = true;
+									}
+
+							// TimeStamp
+								if (Price_JsonObj["Meta Data"]["3. Last Refreshed"].length > 10){
+									$scope.Time_Stamp= moment.tz(Price_JsonObj["Meta Data"]["3. Last Refreshed"], "America/New_York").format("YYYY-DD-MM HH:mm:ss z");
+								}else{
+									$scope.Time_Stamp= moment.tz(Price_JsonObj["Meta Data"]["3. Last Refreshed"] + " 16:00:00", "America/New_York").format("YYYY-DD-MM HH:mm:ss z");
+								}
+
+							// Open
+								var Open_test = Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[0]]["1. open"] *1;
+								Open_test = Open_test.toFixed(2)
+								$scope.Open = Open_test.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+								if (Price_JsonObj["Meta Data"]["3. Last Refreshed"].length > 10){
+
+									var Close_test = Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[1]]["4. close"]*1;
+									Close_test = Close_test.toFixed(2);
+									$scope.Previous_Close = Close_test.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");	
+									$scope.Close1 = false;
+									$scope.Close2 = true;
+
+								}else{
+									// close
+									var Close_test = Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[0]]["4. close"]*1;
+									Close_test = Close_test.toFixed(2);
+									$scope.Previous_Close = Close_test.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+									$scope.Close1 = true;
+									$scope.Close2 = false;
+
+								}
+
+
+							// day's range
+								var Range1 = Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[0]]["3. low"] *1;
+								Range1 = Range1.toFixed(2);
+								Range1 = Range1.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+								
+								var Range2 = Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[0]]["2. high"] *1;
+								Range2 = Range2.toFixed(2);
+								Range2 = Range2.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+								
+								$scope.Day_Range  = Range1 + " - " + Range2;
+
+							// Volume
+								Volume = Price_JsonObj["Time Series (Daily)"][Object.keys(Price_JsonObj["Time Series (Daily)"])[0]]["5. volume"];
+
+								Volume = Volume.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+								$scope.Volume = Volume; 
+
+							///////
+								//symbol name
+								var SymbolName = Price_JsonObj['Meta Data']['2. Symbol'];
+								/// for extracting dates
+								var PriceKeys = Object.keys(Price_JsonObj['Time Series (Daily)']);
+								var TimeSeries = Price_JsonObj['Time Series (Daily)'];
+								var ArrayOfDate = [];
+								var ArrayOfclose = [];
+								var ArrayOfvolume = [];
+								var FinalArray = [];
+								var max_volume = 0;
+								for(var i=0; i<132;i++)
+									{
+										if(parseFloat(TimeSeries[PriceKeys[i]]['5. volume']) > max_volume)
+											{
+												max_volume = parseFloat(TimeSeries[PriceKeys[i]]['5. volume']);
+											}
+										ArrayOfclose.push(parseFloat(TimeSeries[PriceKeys[i]]['4. close']));
+										ArrayOfvolume.push(parseFloat(TimeSeries[PriceKeys[i]]['5. volume']));
+										ArrayOfDate.push(Date.parse(PriceKeys[i]));
+
+									}
+
+								////Price chart 
+
+								SelectedChart['Price'] = Highcharts.chart('container_Price', {
+
+								//tooltip:{xDateFormat:'%m/%d'},
+								chart: {
+									zoomType: 'x',
+
+								},
+								title: {
+
+									text: Stoch_Symbol + ' Stock Price and Volume'
+								},
+								subtitle: {
+									useHTML:true,
+									text: '<a href="https://www.alphavantage.co/" target="_blank"> Source: Alpha Vantage </a>' 
+									},
+								xAxis: {
+									type:'datetime',
+									tickInterval: 5,
+									categories: ArrayOfDate,
+									labels:{
+										format:"{value:%m/%d}"
+									},
+									reversed:true
+
+								},
+								yAxis: [{
+									title: {
+										text: 'Stock Price'
+									}
+								},
+									{// right 
+									gridLineWidth:0,
+									opposite: true,
+									//max: 3.5*max_volume,
+									title: {
+										text: 'Volume'
+									}
+								}],
+								tooltip: {
+									backgroundColor: '#FFFAFA',
+									xDateFormat:'%m/%d',
+								},
+								plotOptions: {
+									area: {
+										marker: {
+											radius: 0
+										},
+										lineWidth: 1,
+										threshold: null,
+										dataLabels: {
+											enabled: false
+										},
+										enableMouseTracking: true,
+
+									}
+								},
+								series: [{
+									type: 'area',
+									name: SymbolName,
+									data: ArrayOfclose,
+									color: '#0000FF',
+									fillOpacity:"0.3"
+								},{
+									type: 'column',
+									name: SymbolName+' volume',
+									data: ArrayOfvolume,
+									yAxis:1,
+									color: '#f2202c'
+
+								}]
+	});	
+
+								// Create Historical Chart
+								var FinalArray =[];
+								var values = Price_JsonObj['Time Series (Daily)'];
+								for ( var key in values){
+
+									var TemprorryArry =[];
+									TemprorryArry.push(Date.parse(key));
+									TemprorryArry.push(parseFloat(values[key]['4. close']));
+									FinalArray.push(TemprorryArry);
+								}
+								FinalArray.reverse();
+								//Shwoing the chart
+								Highcharts.stockChart('container_stockChart', {
+
+									chart: {
+										height: 400
+									},
+
+									title: {
+										text: SymbolName + ' Stock Value'
+									},
+
+									subtitle: {
+										useHTML:true,
+										text: '<a href="https://www.alphavantage.co/" target="_blank"> Source: Alpha Vantage </a>'  
+									},
+								tooltip: {
+									backgroundColor: '#FFFAFA',
+									split: false
+								},
+									rangeSelector: {
+										selected: 0,
+										buttons: [{
+											type: 'week',
+											count: 1,
+											text: '1w'
+										},{
+											type: 'month',
+											count: 1,
+											text: '1m'
+										},{
+											type: 'month',
+											count: 3,
+											text: '3m'
+										}, {
+											type: 'month',
+											count: 6,
+											text: '6m'
+										}, {
+											type: 'ytd',
+											text: 'YTD'
+										}, {
+											type: 'year',
+											count: 1,
+											text: '1y'
+										}, {
+											type: 'all',
+											text: 'All'
+										}]
+
+
+									},
+
+									series: [{
+										name: SymbolName + 'Stock Price',
+										data: FinalArray,
+										type: 'area',
+										threshold: null,
+										tooltip: {
+											valueDecimals: 2
+										}
+									}],
+
+									responsive: {
+										rules: [{
+											condition: {
+												maxWidth: 500
+											},
+											chartOptions: {
+												chart: {
+													height: 300
+												},
+												subtitle: {
+													text: null
+												},
+												navigator: {
+													enabled: false
+												}
+											}
+										}]
+									}
+	});
+								//////
+							}
+						   }
+						else
+						   {
+							if(Repeat_Price<2){
+								Repeat_Price++;
+								console.log(Repeat_Price);
+								Price(Stoch_Symbol);
+							}else{
+								
+								//error message    
+								$scope.DangerMsg_Table = false;
+								$scope.DangerMsg_Price = false;
+								$scope.DangerMsg_Historical_Chart= false;
+								//hiding the table and charts
+								$scope.Table = true;
+								$scope.Historical_Chart= true;
+								$scope.Price_chart = true;	
+								// progress bar
+								$scope.ProgressBar_Price = true;
+								$scope.ProgressBar_Table = true;
+								$scope.ProgressBar_Historical_Chart = true;	
+							}
+							
+						   }
+						}
+					//----------------------------------------------------------//
+				}, function myError(response) {
+				consol.log("Something went wrong");	
+				$scope.DangerMsg_Table = false;
+				$scope.DangerMsg_Price = false;
+				$scope.DangerMsg_Historical_Chart= false;
+			});
+			}
+			//calling the Price Function
+			Price(Symbol_Table);
+	//-----------------------------------------------------------------------------------------------------//		
+			///------------------------------////
+			////////////// SMA //////////////////totally has been done
+			///------------------------------////
+			// get data from Server.js and show it to the table
+			var Repeat_SMA =0;
+			function SMA(Stoch_Symbol){
+				$http({
+					method : "GET",
+					url : 'http://localhost:8089/hw8/Indicators/SMA/' + Stoch_Symbol,
+				}).then(function mySuccess(response) {
+					console.log("I got the data for SMA !");
+					console.log(response.data);// printing Json Object on the console
+
+					//Validation for error
+					if(Object.keys(response.data).length == 0)
+						{
+								if(Repeat_SMA<2){
+									Repeat_SMA++;
+									SMA(Stoch_Symbol);
+								}else{
+
+								   $scope.DangerMsg_SMA = false;
+								   $scope.ProgressBar_SMA = true;
+								}
+						}
+					else
+						{
+
+						if(!response.data.hasOwnProperty("Error Message"))
+						   { 
+							////////////////////////////////////////
+							///////////Printing the Chart //////////
+							////////////////////////////////////////
+
+							//Shwoing the object
+							$scope.ProgressBar_SMA = true;
+							$scope.SMA_chart = false;
+
+							var EMA_JsonObj = response.data;
+							var type = "SMA";
+							//var SymbolName = "aapl";
+							//var StockSymbolName = "aapl";
+								//Symbol Name
+								var SymbolName = EMA_JsonObj['Meta Data']['2: Indicator'];
+
+								/// for extracting dates
+								var keys = Object.keys(EMA_JsonObj['Technical Analysis: SMA']);
+								var TechnicalAnalysis = EMA_JsonObj['Technical Analysis: SMA'];
+								var ArrayOfDate = [];
+								var ArrayOfSMA = [];
+								for(var i=0; i<132;i++)
+									{
+										ArrayOfSMA.push(parseFloat(TechnicalAnalysis[keys[i]][type]));
+										ArrayOfDate.push(Date.parse(keys[i]));
+									}
+
+								//////////////////////////////////////////////
+								//showing the chart
+								SelectedChart['SMA'] = Highcharts.chart('container_SMA', {
+									tooltip:{xDateFormat:'%m/%d'},
+									chart: {
+										type: 'line',
+										zoomType: 'x'
+									},
+									title: {
+										text: SymbolName,
+									},
+									subtitle: {
+										useHTML:true,
+										text: '<a href="https://www.alphavantage.co/" target="_blank"> Source: Alpha Vantage </a>' 
+									},
+									xAxis: {
+										type:'datetime',
+										tickInterval: 5,
+										categories: ArrayOfDate,
+										labels:{
+											format:"{value:%m/%d}"
+										},
+										reversed:true
+									},
+									yAxis: {
+										title: {
+											text: type
+										}
+									},
+									legend: {
+										//layout: 'vertical',
+										//align: 'right',
+										//verticalAlign: 'middle'
+									},
+									plotOptions: {
+										line: {
+											marker: {
+												radius: 2
+											},
+											dataLabels: {
+												enabled: false
+											},
+											enableMouseTracking: true
+										}
+									},
+									series: [{
+										name: Stoch_Symbol,
+										lineWidth: 1,
+										data: ArrayOfSMA,
+										color: '#d6291d'
+									}]
+								});
+							}
+						else
+						   {
+								if(Repeat_SMA<2){
+									Repeat_SMA++;
+									SMA(Stoch_Symbol);
+								}else{
+
+								   $scope.DangerMsg_SMA = false;
+								   $scope.ProgressBar_SMA = true;
+								}
+						   }
+						}
+					//----------------------------------------------------------//
+				}, function myError(response) {
+				consol.log("Something went wrong");
+				$scope.DangerMsg_SMA = false;
+			});
+			}
+			SMA(Symbol_Table);
+	//-----------------------------------------------------------------------------------------------------//
+			///------------------------------////
+			////////////// EMA //////////////////has been finished complitly
+			///------------------------------////
+			// get data from Server.js and show it to the table
+			var Repeat_EMA =0;
+			function EMA(Stoch_Symbol){
+			$http({
+				method : "GET",
+				url : 'http://localhost:8089/hw8/Indicators/EMA/' + Stoch_Symbol,
+			}).then(function mySuccess(response) {
+				console.log("I got the data for EMA !");
+				console.log(response.data);// printing Json Object on the console
+
+				//Validation for error
+				if(Object.keys(response.data).length == 0)
+					{
+						   if(Repeat_EMA<2){
+								Repeat_EMA++;
+								EMA(Stoch_Symbol);
+							}else{
+							   $scope.DangerMsg_EMA = false;
+							   $scope.ProgressBar_EMA = true;
+							}
+					}
+				else
+					{
+						
+					if(!response.data.hasOwnProperty("Error Message"))
+					   { 
+						////////////////////////////////////////
+						///////////Printing the Chart //////////
+						////////////////////////////////////////
+
+						//Shwoing the object
+						$scope.ProgressBar_EMA = true;
+						$scope.EMA_chart = false;
+
+						var EMA_JsonObj = response.data;
+						var type = "EMA";
+							//Symbol Name
+							var SymbolName = EMA_JsonObj['Meta Data']['2: Indicator'];
+
+							/// for extracting dates
+							var keys = Object.keys(EMA_JsonObj['Technical Analysis: EMA']);
+							var TechnicalAnalysis = EMA_JsonObj['Technical Analysis: EMA'];
+							var ArrayOfDate = [];
+							var ArrayOfEMA = [];
+							for(var i=0; i<132;i++)
+								{
+									ArrayOfEMA.push(parseFloat(TechnicalAnalysis[keys[i]][type]));
+									ArrayOfDate.push(Date.parse(keys[i]));
+								}
+
+							//////////////////////////////////////////////
+							//showing the chart
+							SelectedChart['EMA'] = Highcharts.chart('container_EMA', {
+						tooltip:{xDateFormat:'%m/%d'},
+						chart: {
+							type: 'line',
+							zoomType: 'x'
+						},
+						title: {
+							text: SymbolName,
+						},
+						subtitle: {
+							useHTML:true,
+							text: '<a href="https://www.alphavantage.co/" target="_blank"> Source: Alpha Vantage </a>' 
+						},
+						xAxis: {
+							type:'datetime',
+							tickInterval: 5,
+							categories: ArrayOfDate,
+							labels:{
+								format:"{value:%m/%d}"
+							},
+							reversed:true
+						},
+						yAxis: {
+							title: {
+								text: type
+							}
+						},
+						legend: {
+							//layout: 'vertical',
+							//align: 'right',
+							//verticalAlign: 'middle'
+						},
+						plotOptions: {
+							line: {
+								marker: {
+									radius: 2
+								},
+								dataLabels: {
+									enabled: false
+								},
+								enableMouseTracking: true
+							}
+						},
+						series: [{
+							name: Stoch_Symbol,
+							lineWidth: 1,
+							data: ArrayOfEMA,
+							color: '#d6291d'
+						}]
+					});
+						}
+					else
+					   {
+						   if(Repeat_EMA<2){
+								Repeat_EMA++;
+								EMA(Stoch_Symbol);
+							}else{
+							   $scope.DangerMsg_EMA = false;
+							   $scope.ProgressBar_EMA = true;
+							}
+					   }
+					}
+				
+			//----------------------------------------------------------//
+			}, function myError(response) {
+				consol.log("Something went wrong");
+				$scope.DangerMsg_EMA = false;
+			});						
+			}
+			EMA(Symbol_Table);
+	//-----------------------------------------------------------------------------------------------------//
+			///------------------------------////
+			////////////// STOCH ////////////////has beeen don
+			///------------------------------////
+			// get data from Server.js and show it to the table
+			var Repeat_STOCH =0;
+			function STOCH(Stoch_Symbol){
+				$http({
+					method : "GET",
+					url : 'http://localhost:8089/hw8/Indicators/STOCH/' + Stoch_Symbol,
+				}).then(function mySuccess(response) {
+					console.log("I got the data for STOCH!");
+					console.log(response.data);// printing Json Object on the console
+
+					//Validation for error
+					if(Object.keys(response.data).length == 0)
+						{
+								if(Repeat_STOCH<2){
+									Repeat_STOCH++;
+									STOCH(Stoch_Symbol);
+								}else{
+								   $scope.DangerMsg_STOCH = false;
+								   $scope.ProgressBar_STOCH = true;
+								}
+						}
+					else
+						{
+						if(!response.data.hasOwnProperty("Error Message"))
+						   { 
+							////////////////////////////////////////
+							///////////Printing the Chart //////////
+							////////////////////////////////////////
+
+							//Shwoing the object
+							$scope.ProgressBar_STOCH = true;
+							$scope.STOCH_chart = false;
+
+							var STOCH_JsonObj = response.data;
+							//Symbol Name
+							var SymbolName = STOCH_JsonObj['Meta Data']['2: Indicator'];
+
+							/// for extracting dates
+							var keys = Object.keys(STOCH_JsonObj['Technical Analysis: STOCH']);
+							var TechnicalAnalysis = STOCH_JsonObj['Technical Analysis: STOCH'];
+							var ArrayOfDate = [];
+							var ArrayOfSlowK = [];
+							var ArrayOfSlowD = [];
+							for(var i=0; i<132;i++)
+								{
+									ArrayOfSlowK.push(parseFloat(TechnicalAnalysis[keys[i]]['SlowK']));
+									ArrayOfSlowD.push(parseFloat(TechnicalAnalysis[keys[i]]['SlowD']));
+									ArrayOfDate.push(Date.parse(keys[i]));
+								}
+							//////////////////////////////////////////////
+							//showing the chart
+							SelectedChart['STOCH'] = Highcharts.chart('container_STOCH', {
+						tooltip:{xDateFormat:'%m/%d'},
+						chart: {
+							type: 'line',
+							zoomType: 'x'
+						},
+						title: {
+							text: SymbolName,
+						},
+						subtitle: {
+							useHTML:true,
+							text: '<a href="https://www.alphavantage.co/" target="_blank"> Source: Alpha Vantage </a>' 
+						},
+						xAxis: {
+							type:'datetime',
+							tickInterval: 5,
+							categories: ArrayOfDate,
+							labels:{
+								format:"{value:%m/%d}"
+							},
+							reversed:true
+						},
+						yAxis: {
+							title: {
+								text: 'STOCH'
+							}
+						},
+						legend: {
+							//layout: 'vertical',
+							//align: 'right',
+							//verticalAlign: 'middle'
+						},
+						//tooltip:{xDateFormat:'%m/%d'},
+						plotOptions: {
+							line: {
+								marker: {
+									radius: 2
+								},
+								dataLabels: {
+									enabled: false
+								},
+								enableMouseTracking: true
+							}
+						},
+						series: [{
+							name: Stoch_Symbol + ' SlowK',
+							lineWidth: 1,
+							data: ArrayOfSlowK,
+							color: '#d6291d'
+						},{
+							name: Stoch_Symbol + ' SlowD',
+							lineWidth: 1,
+							data: ArrayOfSlowD,
+							color: '#8ec4eb'
+						}]
+			});
+							}
+						else
+						   {
+								if(Repeat_STOCH<2){
+									Repeat_STOCH++;
+									STOCH(Stoch_Symbol);
+								}else{
+								   $scope.DangerMsg_STOCH = false;
+								   $scope.ProgressBar_STOCH = true;
+								}
+						   }
+						}
+					//----------------------------------------------------------//
+				}, function myError(response) {
+					consol.log("Something went wrong");
+					$scope.DangerMsg_STOCH = false;
+				});		
+			}
+			STOCH(Symbol_Table);
+	//-----------------------------------------------------------------------------------------------------//	
+			///------------------------------////
+			////////////// RSI //////////////////has been finished complitly
+			///------------------------------////
+			// get data from Server.js and show it to the table
+			var Repeat_RSI =0;
+			function RSI(Stoch_Symbol){
+				$http({
+					method : "GET",
+					url : 'http://localhost:8089/hw8/Indicators/RSI/' + Stoch_Symbol,
+				}).then(function mySuccess(response) {
+					console.log("I got the data for RSI !");
+					console.log(response.data);// printing Json Object on the console
+
+					if(Object.keys(response.data).length == 0)
+						{
+						   if(Repeat_RSI<2){
+								Repeat_RSI++;
+								RSI(Stoch_Symbol);
+							}else{
+						   		$scope.DangerMsg_RSI = false;
+						   		$scope.ProgressBar_RSI = true;
+							}
+						}
+					if(!response.data.hasOwnProperty("Error Message"))
+					   {   
+							////////////////////////////////////////
+							///////////Printing the Chart //////////
+							////////////////////////////////////////
+
+							//Shwoing the object
+							$scope.ProgressBar_RSI = true;
+							$scope.RSI_chart = false;
+
+							var RSI_JsonObj = response.data;
+								//Symbol Name
+								var SymbolName = RSI_JsonObj['Meta Data']['2: Indicator'];
+
+								/// for extracting dates
+								var keys = Object.keys(RSI_JsonObj['Technical Analysis: RSI']);
+								var TechnicalAnalysis = RSI_JsonObj['Technical Analysis: RSI'];
+								var ArrayOfDate = [];
+								var ArrayOfRSI = [];
+								for(var i=0; i<132;i++)
+									{
+										ArrayOfRSI.push(parseFloat(TechnicalAnalysis[keys[i]]['RSI']));
+										ArrayOfDate.push(Date.parse(keys[i]));
+	}
+
+								//////////////////////////////////////////////
+								//showing the chart
+								SelectedChart['RSI'] = Highcharts.chart('container_RSI', {
+									tooltip:{xDateFormat:'%m/%d'},
+									chart: {
+										type: 'line',
+										zoomType: 'x'
+
+									},
+									title: {
+										text: SymbolName,
+									},
+									subtitle: {
+										useHTML:true,
+										text: '<a href="https://www.alphavantage.co/" target="_blank"> Source: Alpha Vantage </a>' 
+									},
+									xAxis: {
+										type:'datetime',
+										tickInterval: 5,
+										categories: ArrayOfDate,
+										labels:{
+											format:"{value:%m/%d}"
+										},
+										reversed:true
+									},
+									yAxis: {
+										title: {
+											text: 'RSI'
+										}
+									},
+									legend: {
+										//layout: 'vertical',
+										//align: 'right',
+										//verticalAlign: 'middle'
+									},
+									plotOptions: {
+										line: {
+											marker: {
+												radius: 2
+											},
+											dataLabels: {
+												enabled: false
+											},
+											enableMouseTracking: true
+										}
+									},
+									series: [{
+										name: Stoch_Symbol,
+										lineWidth: 1,
+										data: ArrayOfRSI,
+										color: '#d6291d'
+									}]
+	});
+						}
+					else
+					   {
+						   if(Repeat_RSI<2){
+								Repeat_RSI++;
+								RSI(Stoch_Symbol);
+							}else{
+						   		$scope.DangerMsg_RSI = false;
+						   		$scope.ProgressBar_RSI = true;
+							}
+					   }
+				//----------------------------------------------------------//
+				}, function myError(response) {
+					consol.log("Something went wrong");
+					$scope.DangerMsg_RSI = false;
+				});		
+			}
+			RSI(Symbol_Table);
+	//-----------------------------------------------------------------------------------------------------//	
+			///------------------------------//// until here
+			////////////// ADX //////////////////has been finished complitly
+			///------------------------------////
+			// get data from Server.js and show it to the table
+			var Repeat_ADX =0;
+			function ADX(Stoch_Symbol){
+				$http({
+					method : "GET",
+					url : 'http://localhost:8089/hw8/Indicators/ADX/' + Stoch_Symbol,
+				}).then(function mySuccess(response) {
+					console.log("I got the data for ADX !");
+					console.log(response.data);// printing Json Object on the console
+
+					//Validation for error
+					if(Object.keys(response.data).length == 0)
+						{
+								if(Repeat_ADX<2){
+									Repeat_ADX++;
+									ADX(Stoch_Symbol);
+								}else{
+								   $scope.DangerMsg_ADX = false;
+								   $scope.ProgressBar_ADX = true;
+								}
+						}
+					else
+						{
+						if(!response.data.hasOwnProperty("Error Message"))
+						   { 
+							////////////////////////////////////////
+							///////////Printing the Chart //////////
+							////////////////////////////////////////
+
+							//Shwoing the object
+							$scope.ProgressBar_ADX = true;
+							$scope.ADX_chart = false;
+
+							var ADX_JsonObj = response.data;
+							var type = "ADX";
+
+								//Symbol Name
+								var SymbolName = ADX_JsonObj['Meta Data']['2: Indicator'];
+
+								/// for extracting dates
+								var keys = Object.keys(ADX_JsonObj['Technical Analysis: ADX']);
+								var TechnicalAnalysis = ADX_JsonObj['Technical Analysis: ADX'];
+								var ArrayOfDate = [];
+								var ArrayOfADX = [];
+								for(var i=0; i<132;i++)
+									{
+										ArrayOfADX.push(parseFloat(TechnicalAnalysis[keys[i]][type]));
+										ArrayOfDate.push(Date.parse(keys[i]));
+									}
+
+								//////////////////////////////////////////////
+								//showing the chart
+								SelectedChart['ADX'] = Highcharts.chart('container_ADX', {
+							tooltip:{xDateFormat:'%m/%d'},
+							chart: {
+								type: 'line',
+								zoomType: 'x'
+							},
+							title: {
+								text: SymbolName,
+							},
+							subtitle: {
+								useHTML:true,
+								text: '<a href="https://www.alphavantage.co/" target="_blank"> Source: Alpha Vantage </a>' 
+							},
+							xAxis: {
+								type:'datetime',
+								tickInterval: 5,
+								categories: ArrayOfDate,
+								labels:{
+									format:"{value:%m/%d}"
+								},
+								reversed:true
+							},
+							yAxis: {
+								title: {
+									text: type
+								}
+							},
+							legend: {
+								//layout: 'vertical',
+								//align: 'right',
+								//verticalAlign: 'middle'
+							},
+							plotOptions: {
+								line: {
+									marker: {
+										radius: 2
+									},
+									dataLabels: {
+										enabled: false
+									},
+									enableMouseTracking: true
+								}
+							},
+							series: [{
+								name: Stoch_Symbol,
+								lineWidth: 1,
+								data: ArrayOfADX,
+								color: '#d6291d'
+							}]
+						}); 
+							}
+						else
+						   {
+								if(Repeat_ADX<2){
+									Repeat_ADX++;
+									ADX(Stoch_Symbol);
+								}else{
+								   $scope.DangerMsg_ADX = false;
+								   $scope.ProgressBar_ADX = true;
+								}
+						   }
+						}
+						//----------------------------------------------------------//
+				}, function myError(response) {
+					consol.log("Something went wrong");
+					$scope.DangerMsg_ADX = false;
+				});
+			}
+			ADX(Symbol_Table);
+	//-----------------------------------------------------------------------------------------------------//	
+			///------------------------------////
+			////////////// CCI ////////////////// has been completed
+			///------------------------------////
+			// get data from Server.js and show it to the table
+			var Repeat_CCI =0;
+			function CCI(Stoch_Symbol){
+				$http({
+					method : "GET",
+					url : 'http://localhost:8089/hw8/Indicators/CCI/' + Stoch_Symbol,
+				}).then(function mySuccess(response) {
+					console.log("I got the data for CCI !");
+					console.log(response.data);// printing Json Object on the console
+
+					//Validation for error
+					if(Object.keys(response.data).length == 0)
+						{
+							    if(Repeat_CCI<2){
+									Repeat_CCI++;
+									CCI(Stoch_Symbol);
+								}else{
+								   $scope.DangerMsg_CCI = false;
+								   $scope.ProgressBar_CCI = true;
+								}
+						}
+					else
+						{
+						if(!response.data.hasOwnProperty("Error Message"))
+						   { 
+
+							////////////////////////////////////////
+							///////////Printing the Chart //////////
+							////////////////////////////////////////
+
+							//Shwoing the object
+							$scope.ProgressBar_CCI = true;
+							$scope.CCI_chart = false;
+							$scope.News_Feeds= false;
+
+							var CCI_JsonObj = response.data;
+							var type = "CCI";
+								//Symbol Name
+								var SymbolName = CCI_JsonObj['Meta Data']['2: Indicator'];
+
+								/// for extracting dates
+								var keys = Object.keys(CCI_JsonObj['Technical Analysis: CCI']);
+								var TechnicalAnalysis = CCI_JsonObj['Technical Analysis: CCI'];
+								var ArrayOfDate = [];
+								var ArrayOfCCI = [];
+								for(var i=0; i<132;i++)
+									{
+										ArrayOfCCI.push(parseFloat(TechnicalAnalysis[keys[i]][type]));
+										ArrayOfDate.push(Date.parse(keys[i]));
+									}
+
+								//////////////////////////////////////////////
+								//showing the chart
+								SelectedChart['CCI'] = Highcharts.chart('container_CCI', {
+							tooltip:{xDateFormat:'%m/%d'},
+							chart: {
+								type: 'line',
+								zoomType: 'x'
+							},
+							title: {
+								text: SymbolName,
+							},
+							subtitle: {
+								useHTML:true,
+								text: '<a href="https://www.alphavantage.co/" target="_blank"> Source: Alpha Vantage </a>' 
+							},
+							xAxis: {
+								type:'datetime',
+								tickInterval: 5,
+								categories: ArrayOfDate,
+								labels:{
+									format:"{value:%m/%d}"
+								},
+								reversed:true
+							},
+							yAxis: {
+								title: {
+									text: type
+								}
+							},
+							legend: {
+								//layout: 'vertical',
+								//align: 'right',
+								//verticalAlign: 'middle'
+							},
+							plotOptions: {
+								line: {
+									marker: {
+										radius: 2
+									},
+									dataLabels: {
+										enabled: false
+									},
+									enableMouseTracking: true
+								}
+							},
+							series: [{
+								name: Stoch_Symbol,
+								lineWidth: 1,
+								data: ArrayOfCCI,
+								color: '#d6291d'
+							}]
+						});
+							}
+						else
+						   {
+							    if(Repeat_CCI<2){
+									Repeat_CCI++;
+									CCI(Stoch_Symbol);
+								}else{
+								   $scope.DangerMsg_CCI = false;
+								   $scope.ProgressBar_CCI = true;
+								}
+						   }
+						}
+						//----------------------------------------------------------//
+				}, function myError(response) {
+					consol.log("Something went wrong");
+					$scope.DangerMsg_CCI = false;
+				});
+			}
+			CCI(Symbol_Table);
+	//-----------------------------------------------------------------------------------------------------//	
+			///------------------------------////
+			////////////// BBANDS /////////////// complitly had been don
+			///------------------------------////
+			// get data from Server.js and show it to the table
+			var Repeat_BBANDS =0;
+			function BBANDS(Stoch_Symbol){
+				$http({
+					method : "GET",
+					url : 'http://localhost:8089/hw8/Indicators/BBANDS/' + Stoch_Symbol,
+				}).then(function mySuccess(response) {
+					console.log("I got the data for BBANDS !");
+					console.log(response.data);// printing Json Object on the console
+
+					//Validation for error
+					if(Object.keys(response.data).length == 0)
+						{
+							$scope.DangerMsg_BBANDS = false;
+							$scope.ProgressBar_BBANDS = true;
+						}
+					else
+						{
+						if(!response.data.hasOwnProperty("Error Message"))
+						   { 
+								////////////////////////////////////////
+								///////////Printing the Chart //////////
+								////////////////////////////////////////
+
+								//Shwoing the object
+								$scope.ProgressBar_BBANDS = true;
+								$scope.BBANDS_chart = false;
+
+								var BBANDS_JsonObj = response.data;
+								//Symbol Name
+								var SymbolName = BBANDS_JsonObj['Meta Data']['2: Indicator'];
+
+								/// for extracting dates
+								var keys = Object.keys(BBANDS_JsonObj['Technical Analysis: BBANDS']);
+								var TechnicalAnalysis = BBANDS_JsonObj['Technical Analysis: BBANDS'];
+								var ArrayOfDate = [];
+								var ArrayOfRealMiddleBand = [];
+								var ArrayOfRealLowerBand = [];
+								var ArrayOfRealUpperBand = [];
+								for(var i=0; i<132;i++)
+									{
+										ArrayOfRealMiddleBand.push(parseFloat(TechnicalAnalysis[keys[i]]['Real Middle Band']));
+										ArrayOfRealLowerBand.push(parseFloat(TechnicalAnalysis[keys[i]]['Real Lower Band']));
+										ArrayOfRealUpperBand.push(parseFloat(TechnicalAnalysis[keys[i]]['Real Upper Band']));
+										ArrayOfDate.push(Date.parse(keys[i]));
+									}
+								//////////////////////////////////////////////
+								//showing the chart
+								SelectedChart['BBANDS'] = Highcharts.chart('container_BBANDS', {
+									tooltip:{xDateFormat:'%m/%d'},
+									chart: {
+										type: 'line',
+										zoomType: 'x'
+									},
+									title: {
+										text: SymbolName,
+									},
+									subtitle: {
+										useHTML:true,
+										text: '<a href="https://www.alphavantage.co/" target="_blank"> Source: Alpha Vantage </a>' 
+									},
+									xAxis: {
+										type:'datetime',
+										tickInterval: 5,
+										categories: ArrayOfDate,
+										labels:{
+											format:"{value:%m/%d}"
+										},
+										reversed:true
+									},
+									yAxis: {
+										title: {
+											text: 'BBANDS'
+										}
+									},
+									legend: {
+										//layout: 'vertical',
+										//align: 'right',
+										//verticalAlign: 'middle'
+									},
+									plotOptions: {
+										line: {
+											marker: {
+												radius: 2
+											},
+											dataLabels: {
+												enabled: false
+											},
+											enableMouseTracking: true
+										}
+									},
+									series: [{
+										name: Stoch_Symbol + 'Real Middle Band',
+										data: ArrayOfRealMiddleBand,
+										color: '#565658',
+										lineWidth: 1
+									},{
+										name: Stoch_Symbol + 'Real Lower Band',
+										data: ArrayOfRealLowerBand,
+										color: '#db261c',
+										lineWidth: 1
+									},{
+										name: Stoch_Symbol + 'Real Upper Band',
+										data: ArrayOfRealUpperBand,
+										color: '#a8e7a0',
+										lineWidth: 1
+									}]
+					});	
+							}
+						else
+						   {
+							   	if(Repeat_BBANDS<2){
+									Repeat_BBANDS++;
+									BBANDS(Stoch_Symbol);
+								}else{
+								   $scope.DangerMsg_BBANDS = false;
+								   $scope.ProgressBar_BBANDS = true;
+								}
+
+						   }
+						}
+						//----------------------------------------------------------//
+				}, function myError(response) {
+					consol.log("Something went wrong");
+					$scope.DangerMsg_BBANDS = false;
+				});	
+			}
+			BBANDS(Symbol_Table);
+	//-----------------------------------------------------------------------------------------------------//
+			///------------------------------////
+			////////////// MACD ///////////////// Finished complitly
+			///------------------------------////
+			// get data from Server.js and show it to the table
+			var Repeat_MACD =0;
+			function MACD(Stoch_Symbol){
+				$http({
+					method : "GET",
+					url : 'http://localhost:8089/hw8/Indicators/MACD/' + Stoch_Symbol,
+				}).then(function mySuccess(response) {
+					console.log("I got the data for MACD !");
+					console.log(response.data);// printing Json Object on the console
+
+					//Validation for error
+					if(Object.keys(response.data).length == 0)
+						{
+							   	if(Repeat_MACD<3){
+									Repeat_MACD++;
+									MACD(Stoch_Symbol);
+								}else{
+								   $scope.DangerMsg_MACD = false;
+								   $scope.ProgressBar_MACD = true;
+								}
+						}
+					else
+						{
+						if(!response.data.hasOwnProperty("Error Message"))
+						   {   
+							////////////////////////////////////////
+							///////////Printing the Chart //////////
+							////////////////////////////////////////
+
+							//Shwoing the object
+							$scope.ProgressBar_MACD = true;
+							$scope.MACD_chart = false;
+
+							var MACD_JsonObj = response.data;
+							//Symbol Name
+							var SymbolName = MACD_JsonObj['Meta Data']['2: Indicator'];
+
+							/// for extracting dates
+							var keys = Object.keys(MACD_JsonObj['Technical Analysis: MACD']);
+							var TechnicalAnalysis = MACD_JsonObj['Technical Analysis: MACD'];
+							var ArrayOfDate = [];
+							var ArrayOfMACD_Hist = [];
+							var ArrayOfMACD = [];
+							var ArrayOfMACD_Signal = [];
+							for(var i=0; i<132;i++)
+								{
+									ArrayOfMACD_Hist.push(parseFloat(TechnicalAnalysis[keys[i]]['MACD_Hist']));
+									ArrayOfMACD.push(parseFloat(TechnicalAnalysis[keys[i]]['MACD']));
+									ArrayOfMACD_Signal.push(parseFloat(TechnicalAnalysis[keys[i]]['MACD_Signal']));
+									ArrayOfDate.push(Date.parse(keys[i]));
+								}
+							//////////////////////////////////////////////
+							//showing the chart
+							SelectedChart['MACD'] = Highcharts.chart('container_MACD', {
+							tooltip:{xDateFormat:'%m/%d'},
+							chart: {
+								type: 'line',
+								zoomType: 'x'
+							},
+							title: {
+								text: SymbolName,
+							},
+							subtitle: {
+								useHTML:true,
+								text: '<a href="https://www.alphavantage.co/" target="_blank"> Source: Alpha Vantage </a>' 
+							},
+							xAxis: {
+								type:'datetime',
+								tickInterval: 5,
+								categories: ArrayOfDate,
+								labels:{
+									format:"{value:%m/%d}"
+								},
+								reversed:true
+							},
+							yAxis: {
+								title: {
+									text: 'MACD'
+								}
+							},
+							legend: {
+								//layout: 'vertical',
+								//align: 'right',
+								//verticalAlign: 'middle'
+							},
+							plotOptions: {
+								line: {
+									marker: {
+										radius: 2
+									},
+									dataLabels: {
+										enabled: false
+									},
+									enableMouseTracking: true
+								}
+							},
+							series: [{
+								name: Stoch_Symbol + 'MACD',
+								data: ArrayOfMACD,
+								color: '#ca2bb9',
+								lineWidth: 1
+							},{
+								name: Stoch_Symbol + 'MACD_Hist',
+								data: ArrayOfMACD_Hist,
+								color: '#f5b177',
+								lineWidth: 1
+							},{
+								name: Stoch_Symbol + 'MACD_Signal',
+								data: ArrayOfMACD_Signal,
+								color: '#969ddf',
+								lineWidth: 1
+							}]
+			});
+							}
+						else
+						   {
+							   	if(Repeat_MACD<2){
+									Repeat_MACD++;
+									MACD(Stoch_Symbol);
+								}else{
+								   $scope.DangerMsg_MACD = false;
+								   $scope.ProgressBar_MACD = true;
+								}
+						   }
+						}
+				}, function myError(response) {
+					consol.log("Something went wrong");
+					$scope.DangerMsg_MACD = false;
+				});	
+			}
+			MACD(Symbol_Table);
+	//-----------------------------------------------------------------------------------------------------//
+			///------------------------------////
+			////////////// NEWS ///////////////// has been done completly
+			///------------------------------////
+			// get data from Server.js and show it to the table
+			var Repeat_NEWS =0;
+			function NEWS(Stoch_Symbol){
+				$http({
+					method : "GET",
+					url : 'http://localhost:8089/hw8/News/' + Stoch_Symbol,
+				}).then(function mySuccess(response) {
+					console.log("I got the data for News !");
+					console.log(response.data);// printing Json Object on the console
+
+					if(!response.data.hasOwnProperty("Error Message"))
+						   {   
+								////////////////////////////////////////
+								///////////Printing the Chart //////////
+								////////////////////////////////////////
+
+								//Shwoing the object
+								$scope.News_Feeds = false;
+								$scope.DangerMsg_News_Feeds = true;
+							    $scope.ProgressBar_News_Feeds = true;
+
+
+								$scope.NewsList=[];
+								var xmlobj = response.data;
+								///// desplaying the table
+								var NumberOfArticles = 0;
+								var substring_article = "seekingalpha.com/article";
+								var HtmlTable = "<table class=\"Gray_Background2\" style=\"width:80%;margin: auto;\">";	
+								for(var i=0;NumberOfArticles<5;i++)
+									{
+										//string.indexOf(substring) !== -1;
+										if(xmlobj['rss']['channel'][0]['item'][i]['link'][0].indexOf(substring_article) !== -1){
+
+
+											$scope.NewsList.push({
+												title: xmlobj['rss']['channel'][0]['item'][i]['title'][0],
+												url: xmlobj['rss']['channel'][0]['item'][i]['link'][0],
+												author: xmlobj['rss']['channel'][0]['item'][i]['sa:author_name'][0],
+												date: moment.tz(xmlobj['rss']['channel'][0]['item'][i]['pubDate'][0].split('-')[0], "America/New_York").format("ddd, DD MMM YYYY HH:mm:ss z")
+											})
+
+										NumberOfArticles++;
+										}
+
+									}
+							}
+						else
+						   {
+							   	if(Repeat_NEWS<2){
+									Repeat_NEWS++;
+									NEWS(Stoch_Symbol);
+								}else{
+								   $scope.News_Feeds = true; //hiding the scroll
+								   $scope.DangerMsg_News_Feeds = false;
+								   $scope.ProgressBar_News_Feeds = true;
+								}
+						   }
+				}, function myError(response) {
+					consol.log("Something went wrong");
+					$scope.DangerMsg_NEWS = false;
+				});	
+			}
+			NEWS(Symbol_Table);
+	//-----------------------------------------------------------------------------------------------------//
+
+}
+
+  }
+})();
+</script>
